@@ -1,3 +1,5 @@
+const Transcription = require("../models/Transcription")
+
 const uploadAudio = async (req, res) => {
   try {
     if (!req.file) {
@@ -7,11 +9,16 @@ const uploadAudio = async (req, res) => {
       })
     }
 
-    res.status(200).json({
+    const newTranscription =
+      await Transcription.create({
+        fileName: req.file.filename,
+        filePath: req.file.path,
+      })
+
+    res.status(201).json({
       success: true,
       message: "File uploaded successfully",
-      fileName: req.file.filename,
-      filePath: req.file.path,
+      data: newTranscription,
     })
   } catch (error) {
     res.status(500).json({
