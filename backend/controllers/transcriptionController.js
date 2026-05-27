@@ -1,4 +1,8 @@
+const fs = require("fs")
+
 const Transcription = require("../models/Transcription")
+
+const openai = require("../config/openai")
 
 const uploadAudio = async (req, res) => {
   try {
@@ -9,15 +13,22 @@ const uploadAudio = async (req, res) => {
       })
     }
 
+    const transcriptionResponse =
+      await openai.audio.transcriptions.create({
+        file: fs.createReadStream(req.file.path),
+        model: "whisper-1",
+      })
+
     const newTranscription =
       await Transcription.create({
         fileName: req.file.filename,
         filePath: req.file.path,
+        transcription: transcriptionResponse.text,
       })
 
     res.status(201).json({
       success: true,
-      message: "File uploaded successfully",
+      message: "Transcription generated successfully",
       data: newTranscription,
     })
   } catch (error) {
