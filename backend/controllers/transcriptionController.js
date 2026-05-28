@@ -13,11 +13,9 @@ const uploadAudio = async (req, res) => {
       })
     }
 
-    const transcriptionResponse =
-      await openai.audio.transcriptions.create({
-        file: fs.createReadStream(req.file.path),
-        model: "whisper-1",
-      })
+const transcriptionResponse = {
+  text: "This is a mock transcription for testing frontend integration."
+}
 
     const newTranscription =
       await Transcription.create({
