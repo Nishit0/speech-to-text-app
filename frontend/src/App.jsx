@@ -6,17 +6,102 @@ function App() {
   const [transcription, setTranscription] = useState("")
   const [loading, setLoading] = useState(false)
 
+  const [recording, setRecording] = useState(false)
+  const [mediaRecorder, setMediaRecorder] =
+    useState(null)
+
   const handleFileChange = (e) => {
     setAudioFile(e.target.files[0])
   }
 
+  const startRecording = async () => {
+    try {
+      const stream =
+        await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        })
+
+      const recorder =
+        new MediaRecorder(stream)
+
+      const chunks = []
+
+      recorder.ondataavailable = (event) => {
+        chunks.push(event.data)
+      }
+
+      recorder.onstop = () => {
+        const audioBlob = new Blob(chunks, {
+          type: "audio/webm",
+        })
+
+        const file = new File(
+          [audioBlob],
+          "recording.webm",
+          {
+            type: "audio/webm",
+          }
+        )
+
+        setAudioFile(file)
+
+        recorder.onstop = () => {
+          alert("Recording saved. Click upload.")
+  const audioBlob = new Blob(chunks, {
+    type: "audio/webm",
+  })
+
+  const file = new File(
+    [audioBlob],
+    "recording.webm",
+    {
+      type: "audio/webm",
+    }
+  )
+
+  setAudioFile(file)
+
+  alert(
+    "Recording saved. Click Upload Audio."
+  )
+
+  stream.getTracks().forEach((track) =>
+    track.stop()
+  )
+}
+
+        stream.getTracks().forEach((track) =>
+          track.stop()
+        )
+      }
+
+      recorder.start()
+
+      setMediaRecorder(recorder)
+      setRecording(true)
+    } catch (error) {
+      console.error(error)
+
+      alert("Microphone access denied")
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorder) {
+      mediaRecorder.stop()
+
+      setRecording(false)
+    }
+  }
+
   const handleUpload = async () => {
     if (!audioFile) {
-      alert("Please select an audio file")
+      alert("Please select or record audio")
       return
     }
 
     try {
+      setTranscription("")
       setLoading(true)
 
       const formData = new FormData()
@@ -32,15 +117,14 @@ function App() {
         response.data.data.transcription
       )
     } catch (error) {
-  console.error(error)
+      console.error(error)
 
-  console.log(error.response)
-
-  alert(
-    error.response?.data?.message ||
-    "Upload failed"
-  )
-}finally {
+      alert(
+        error?.response?.data?.message ||
+        error.message ||
+        "Upload failed"
+      )
+    } finally {
       setLoading(false)
     }
   }
@@ -48,7 +132,8 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-5">
       <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-xl">
-        <h1 className="text-3xl font-bold text-center mb-6">
+
+        <h1 className="text-3xl font-bold text-center mb-8">
           Speech to Text App
         </h1>
 
@@ -59,10 +144,29 @@ function App() {
           className="mb-4 w-full"
         />
 
+        <p className="mb-4">
+          {audioFile
+            ? `Selected: ${audioFile.name}`
+            : "No audio selected"}
+        </p>
+
+        <button
+          onClick={
+            recording
+              ? stopRecording
+              : startRecording
+          }
+          className="bg-red-500 text-white px-6 py-2 rounded-lg w-full mb-4"
+        >
+          {recording
+            ? "Recording.... Click to Stop"
+            : "Start Recording"}
+        </button>
+
         <button
           onClick={handleUpload}
           disabled={loading}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg w-full hover:bg-blue-700"
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg w-full"
         >
           {loading
             ? "Generating Transcription..."
@@ -70,8 +174,8 @@ function App() {
         </button>
 
         {transcription && (
-          <div className="mt-6">
-            <h2 className="text-xl font-semibold mb-2">
+          <div className="mt-8">
+            <h2 className="text-2xl font-semibold mb-3">
               Transcription
             </h2>
 
@@ -80,6 +184,7 @@ function App() {
             </div>
           </div>
         )}
+
       </div>
     </div>
   )
