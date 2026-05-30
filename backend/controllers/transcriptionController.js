@@ -13,21 +13,44 @@ const uploadAudio = async (req, res) => {
       })
     }
 
-const transcriptionResponse = {
-  text: "This is a mock transcription for testing frontend integration."
-}
+    const transcriptionResponse = {
+      text: "This is a mock transcription for testing frontend integration.",
+    }
 
     const newTranscription =
       await Transcription.create({
         fileName: req.file.filename,
         filePath: req.file.path,
-        transcription: transcriptionResponse.text,
+        transcription:
+          transcriptionResponse.text,
       })
 
     res.status(201).json({
       success: true,
-      message: "Transcription generated successfully",
+      message:
+        "Transcription generated successfully",
       data: newTranscription,
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    })
+  }
+}
+
+const getTranscriptions = async (
+  req,
+  res
+) => {
+  try {
+    const transcriptions =
+      await Transcription.find()
+        .sort({ createdAt: -1 })
+
+    res.json({
+      success: true,
+      data: transcriptions,
     })
   } catch (error) {
     res.status(500).json({
@@ -39,4 +62,5 @@ const transcriptionResponse = {
 
 module.exports = {
   uploadAudio,
+  getTranscriptions,
 }

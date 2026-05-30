@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import axios from "axios"
 
 function App() {
@@ -9,7 +9,8 @@ function App() {
   const [recording, setRecording] = useState(false)
   const [mediaRecorder, setMediaRecorder] =
     useState(null)
-
+const [history, setHistory] =
+  useState([])
   const handleFileChange = (e) => {
     setAudioFile(e.target.files[0])
   }
@@ -129,6 +130,28 @@ function App() {
     }
   }
 
+const fetchHistory = async () => {
+  try {
+    const response =
+      await axios.get(
+        "http://localhost:5000/api/transcription/history"
+      )
+
+    setHistory(response.data.data)
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+useEffect(() => {
+  const loadHistory = async () => {
+    await fetchHistory()
+  }
+
+  loadHistory()
+}, [])
+
+
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-5">
       <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-xl">
@@ -184,6 +207,30 @@ function App() {
             </div>
           </div>
         )}
+        <div className="mt-8">
+  <h2 className="text-2xl font-bold mb-4">
+    History
+  </h2>
+
+  {history.map((item) => (
+    <div
+      key={item._id}
+      className="bg-gray-100 p-4 rounded mb-3"
+    >
+      <p className="font-semibold">
+        {item.fileName}
+      </p>
+      <p className="text-sm text-gray-500">
+  {new Date(
+    item.createdAt
+  ).toLocaleString()}
+</p>
+      <p>
+        {item.transcription}
+      </p>
+    </div>
+  ))}
+</div>
 
       </div>
     </div>
