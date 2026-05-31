@@ -154,7 +154,7 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-5">
-      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-xl">
+      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-2xl">
 
         <h1 className="text-3xl font-bold text-center mb-8">
           Speech to Text App
@@ -168,9 +168,13 @@ useEffect(() => {
         />
 
         <p className="mb-4">
-          {audioFile
-            ? `Selected: ${audioFile.name}`
-            : "No audio selected"}
+{audioFile && (
+  <audio
+    controls
+    className="w-full mb-4"
+    src={URL.createObjectURL(audioFile)}
+  />
+)}
         </p>
 
         <button
@@ -185,6 +189,11 @@ useEffect(() => {
             ? "Recording.... Click to Stop"
             : "Start Recording"}
         </button>
+        {recording && (
+  <p className="text-red-500 text-center mt-2 animate-pulse">
+    ● Recording in progress...
+  </p>
+)}
 
         <button
           onClick={handleUpload}
@@ -192,8 +201,13 @@ useEffect(() => {
           className="bg-blue-600 text-white px-6 py-2 rounded-lg w-full"
         >
           {loading
-            ? "Generating Transcription..."
-            : "Upload Audio"}
+ ? "Processing Audio..."
+ : "Upload Audio"}
+ {loading && (
+  <div className="text-center mt-3">
+    Processing transcription...
+  </div>
+)}
         </button>
 
         {transcription && (
@@ -212,24 +226,28 @@ useEffect(() => {
     History
   </h2>
 
-  {history.map((item) => (
+  {history.length === 0 ? (
+  <p>No transcriptions yet</p>
+) : (
+  history.map((item) => (
     <div
       key={item._id}
-      className="bg-gray-100 p-4 rounded mb-3"
+      className="bg-white border shadow-sm p-4 rounded-xl mb-4"
     >
       <p className="font-semibold">
         {item.fileName}
       </p>
-      <p className="text-sm text-gray-500">
-  {new Date(
-    item.createdAt
-  ).toLocaleString()}
-</p>
-      <p>
-        {item.transcription}
+
+      <p className="text-sm text-gray-500 mb-2">
+        {new Date(
+          item.createdAt
+        ).toLocaleString()}
       </p>
+
+      <p>{item.transcription}</p>
     </div>
-  ))}
+  ))
+)}
 </div>
 
       </div>
