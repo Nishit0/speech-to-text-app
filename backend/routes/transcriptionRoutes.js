@@ -3,6 +3,11 @@ const router = express.Router()
 
 const upload = require("../middleware/uploadMiddleware")
 
+const protect =
+ require(
+ "../middleware/authMiddleware"
+)
+
 const {
   uploadAudio,
   getTranscriptions,
@@ -16,6 +21,7 @@ router.post(
 
 router.get(
   "/history",
+  protect,
   getTranscriptions
 )
 

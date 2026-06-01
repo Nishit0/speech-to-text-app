@@ -11,9 +11,37 @@ function App() {
     useState(null)
 const [history, setHistory] =
   useState([])
-  const handleFileChange = (e) => {
-    setAudioFile(e.target.files[0])
+const handleFileChange = (e) => {
+  const file = e.target.files[0]
+
+  if (!file) return
+
+  const allowedTypes = [
+    "audio/mpeg",
+    "audio/wav",
+    "audio/webm",
+    "audio/mp4",
+    "audio/x-m4a",
+  ]
+
+  if (!allowedTypes.includes(file.type)) {
+    alert(
+      "Please upload valid audio file"
+    )
+
+    return
   }
+
+  if (file.size > 10 * 1024 * 1024) {
+    alert(
+      "File size must be under 10MB"
+    )
+
+    return
+  }
+
+  setAudioFile(file)
+}
 
   const startRecording = async () => {
     try {
@@ -87,13 +115,13 @@ const [history, setHistory] =
     }
   }
 
-  const stopRecording = () => {
-    if (mediaRecorder) {
-      mediaRecorder.stop()
+const stopRecording = () => {
+  if (!mediaRecorder) return
 
-      setRecording(false)
-    }
-  }
+  mediaRecorder.stop()
+
+  setRecording(false)
+}
 
   const handleUpload = async () => {
     if (!audioFile) {
@@ -120,11 +148,11 @@ const [history, setHistory] =
     } catch (error) {
       console.error(error)
 
-      alert(
-        error?.response?.data?.message ||
-        error.message ||
-        "Upload failed"
-      )
+const message =
+  error?.response?.data?.message ||
+  "Something went wrong"
+
+alert(message)
     } finally {
       setLoading(false)
     }
@@ -196,8 +224,10 @@ useEffect(() => {
 )}
 
         <button
-          onClick={handleUpload}
-          disabled={loading}
+  onClick={handleUpload}
+  disabled={
+    loading || !audioFile
+  }
           className="bg-blue-600 text-white px-6 py-2 rounded-lg w-full"
         >
           {loading
@@ -227,7 +257,9 @@ useEffect(() => {
   </h2>
 
   {history.length === 0 ? (
-  <p>No transcriptions yet</p>
+  <p className="text-center text-gray-500">
+  Upload or record audio to begin
+</p>
 ) : (
   history.map((item) => (
     <div
